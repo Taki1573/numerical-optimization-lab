@@ -1,0 +1,19 @@
+name: Verify stage 1 benchmarks
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions: {}
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run the benchmark and gradient checks
+        run: |
+          python3 -B -m unittest discover -s tests -v
+          python3 -B verify_stage1.py

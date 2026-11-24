@@ -53,4 +53,6 @@ $$
 
 ## 与协作台同步
 
-推送到 `main` 时，GitHub Actions 会复跑第一阶段测试，并在独立任务中向[迭代间协作台](https://optima-duo-studio-26.neatspruce33.chatgpt.site)发送最新提交编号和链接。同步状态可在仓库的 Actions 页查看；需要重试时可重新运行该工作流。任务打卡、分工和验收状态由成员在协作台中维护。
+[迭代间协作台](https://optima-duo-studio-26.neatspruce33.chatgpt.site) 打开期间会定期读取本公开仓库的 `main` 分支。“GitHub 成果库”中的短提交编号可打开对应版本。任务卡里的验收链接固定到当次验证的结果，方便日后复核。两位成员在协作台维护任务分工和打卡状态。
+
+推送到 `main` 后，GitHub Actions 会在独立环境中执行上面的两条复跑命令。可在[自动验证记录](https://github.com/Taki1573/numerical-optimization-lab/actions/workflows/verify-stage-1.yml)中查看每次运行。
