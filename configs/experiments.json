@@ -1,0 +1,44 @@
+{
+  "schema_version": 1,
+  "agreement": "proposed_pending_B_confirmation",
+  "dimension": 10,
+  "initial_points": {
+    "rosenbrock": {
+      "primary": [-1.2, 1.0, -1.2, 1.0, -1.2, 1.0, -1.2, 1.0, -1.2, 1.0],
+      "secondary": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+    },
+    "rastrigin": {
+      "primary": [-1.25, 1.4, -1.25, 1.4, -1.25, 1.4, -1.25, 1.4, -1.25, 1.4],
+      "secondary": [-0.18, 0.21, -0.18, 0.21, -0.18, 0.21, -0.18, 0.21, -0.18, 0.21]
+    }
+  },
+  "budget_per_run": {
+    "max_iterations": 20000,
+    "max_objective_calls": 300000
+  },
+  "convergence": {
+    "common_postcheck_analytic_gradient_inf_norm": 1e-6,
+    "steepest_descent_working_gradient_inf_norm": 1e-6,
+    "bfgs_gtol": 1e-6,
+    "bfgs_norm": "inf",
+    "trust_exact_gtol": 1e-6,
+    "nelder_mead_xatol": 1e-8,
+    "nelder_mead_fatol": 1e-10
+  },
+  "derivative_experiment": {
+    "high": {"scheme": "central", "relative_step": 1e-5},
+    "low": {"scheme": "forward", "relative_step": 0.01},
+    "coordinate_step": "relative_step * max(1, abs(x_i))"
+  },
+  "line_search": {
+    "fixed_alpha": {"rosenbrock": 0.0005, "rastrigin": 0.001},
+    "armijo": {"initial_alpha": 1.0, "c1": 0.0001, "shrink_factor": 0.5},
+    "strong_wolfe": {"c1": 0.0001, "c2": 0.9}
+  },
+  "result_fields": [
+    "case_id", "function", "dimension", "start_id", "x0", "method",
+    "gradient_mode", "step_mode", "parameters", "x_final", "f_final",
+    "grad_inf_final", "nit", "nfev", "ngev", "nhev",
+    "stop_reason", "native_success", "stationary_postcheck"
+  ]
+}

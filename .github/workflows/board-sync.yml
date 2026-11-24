@@ -1,0 +1,67 @@
+name: Verify stage 1 and sync the board
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions: {}
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run the benchmark and gradient checks
+        run: |
+          python3 -B -m unittest discover -s tests -v
+          python3 -B verify_stage1.py
+
+  sync:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      id-token: write
+    steps:
+      - name: Send the main commit to the coursework board
+        shell: python
+        env:
+          BOARD_ENDPOINT: https://optima-duo-studio-26.neatspruce33.chatgpt.site/api/github-sync
+        run: |
+          import datetime
+          import json
+          import os
+          import time
+          from urllib.error import HTTPError, URLError
+          from urllib.parse import urlencode
+          from urllib.request import Request, urlopen
+
+          env = os.environ
+          endpoint = env["BOARD_ENDPOINT"]
+          identity_url = env["ACTIONS_ID_TOKEN_REQUEST_URL"]
+          separator = "&" if "?" in identity_url else "?"
+          token_request = Request(identity_url + separator + urlencode({"audience": endpoint}),
+                                  headers={"Authorization": "Bearer " + env["ACTIONS_ID_TOKEN_REQUEST_TOKEN"]})
+          with urlopen(token_request, timeout=20) as response:
+              identity = json.load(response)["value"]
+          repo, sha = env["GITHUB_REPOSITORY"], env["GITHUB_SHA"]
+          payload = {"repository": repo, "sha": sha, "ref": env["GITHUB_REF"],
+                     "url": f"https://github.com/{repo}/commit/{sha}",
+                     "runNumber": int(env["GITHUB_RUN_NUMBER"]),
+                     "at": datetime.datetime.now(datetime.timezone.utc).isoformat()}
+          request = Request(endpoint, data=json.dumps(payload).encode(),
+                            headers={"Authorization": "Bearer " + identity, "Content-Type": "application/json"})
+          for attempt in range(4):
+              try:
+                  with urlopen(request, timeout=20) as response:
+                      print(f"Board received {sha[:7]} (HTTP {response.status}).")
+                  break
+              except HTTPError as exc:
+                  if exc.code not in (408, 429, 500, 502, 503, 504) or attempt == 3:
+                      raise SystemExit(f"Board returned HTTP {exc.code}.")
+              except URLError:
+                  if attempt == 3:
+                      raise
+              time.sleep(2 ** attempt)
